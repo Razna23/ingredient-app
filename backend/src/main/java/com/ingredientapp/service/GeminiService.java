@@ -10,6 +10,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -112,10 +113,18 @@ public class GeminiService {
             String responseJson;
             try {
                 responseJson = restTemplate.postForObject(GEMINI_URL, requestEntity, String.class);
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                // On the free tier this is almost always the 20-requests/day quota being
+                // exhausted, not a transient rate limit. Surface this distinctly (instead of
+                // returning an empty list) so the controller/front-end can tell the user the
+                // real reason instead of "try a clearer angle".
+                logger.warn("Gemini API quota/rate limit hit (model={}): {}", model, e.getMessage());
+                throw new GeminiRateLimitedException(
+                        "The Gemini API daily free-tier quota has been used up. Try again later.");
             } catch (RestClientException e) {
-                // Network failure, timeout, or a non-2xx HTTP response (bad/expired API key,
-                // rate limiting, wrong model name, etc). Logged so a "no ingredients detected"
-                // scan can be told apart from a genuinely failed API call in Render's logs.
+                // Network failure, timeout, or another non-2xx HTTP response (bad/expired API
+                // key, wrong model name, etc). Logged so a "no ingredients detected" scan can
+                // be told apart from a genuinely failed API call in Render's logs.
                 logger.error("Gemini API call failed (model={}): {}", model, e.getMessage(), e);
                 return results;
             }
@@ -149,6 +158,11 @@ public class GeminiService {
             } else {
                 logger.warn("Gemini model_output was not a JSON array as requested. Model text: {}", modelText);
             }
+        } catch (GeminiRateLimitedException e) {
+            // Let this propagate up to the controller unchanged - it must NOT be swallowed by
+            // the generic catch below, or the quota-exhausted case would silently collapse
+            // back into an empty "no ingredients detected" result.
+            throw e;
         } catch (Exception e) {
             // Gemini occasionally deviates from the requested JSON-only format (malformed JSON,
             // unexpected shape); fail closed (no ingredients detected for this scan) rather than

@@ -59,39 +59,47 @@ body {
 }
 
 .screen-title {
-  font-size: 1.4rem;
+  font-size: 1.15rem;
   font-weight: 700;
   text-align: center;
+  margin-top: 0.75rem;
   margin-bottom: 1rem;
 }
 
-/* Logo shown above "Scan Ingredient": the user's own uploaded logo image (img/logo.png)
-   plus a text lockup ("SmartChef AI" + a smaller subtitle) built with a serif font
-   already built into every phone/desktop (Georgia, falling back to Times New Roman and
-   then any serif) for a more "culinary/cookbook" feel than the app's default sans-serif
-   - deliberately no @font-face or Google Fonts <link>, so nothing new to host or load. */
+/* Logo shown above "Scan Ingredient": the title text block (.app-logo-text) is the
+   thing that gets centered - based only on its own width - and the logo image is a
+   separate child, taken out of the flow with position:absolute and pinned to sit right
+   against the text block's left edge. This is deliberately different from a flex row
+   that centers logo+text together as one group (that pushes the text off-center,
+   since the pair's combined width includes the logo); here the text is genuinely
+   centered as if the logo weren't there, while the logo still tracks alongside it
+   wherever it ends up. Text uses Georgia (already built into every phone/desktop,
+   falling back to Times New Roman and then any serif) for a "culinary/cookbook" feel -
+   deliberately no @font-face or Google Fonts <link>, so nothing new to host or load. */
 .app-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
+  text-align: center;
   margin-bottom: 0.7rem;
 }
 
-.app-logo-image {
-  flex-shrink: 0;
-  height: 46px;
-  width: auto;
-}
-
 .app-logo-text {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  display: inline-block;
   line-height: 1.2;
   text-align: left;
 }
 
+.app-logo-image {
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  margin-right: 0.6rem;
+  height: 46px;
+  width: auto;
+}
+
 .app-logo-title {
+  display: block;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
   font-size: 1.15rem;
@@ -101,6 +109,7 @@ body {
 }
 
 .app-logo-subtitle {
+  display: block;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 600;
   font-size: 0.62rem;

@@ -168,10 +168,12 @@ body {
   opacity: 1;
 }
 
-/* "Scan Another" / "Get Recipes" at 1.5x the normal Bootstrap button size
-   (padding, font size, and border radius all scaled together). */
+/* "Scan Another" / "Get Recipes" / "Back to Ingredients" at 1.5x the normal Bootstrap
+   button size (padding, font size, and border radius all scaled together), and sharing
+   the same blue primary color as "Scan Another" and "Capture". */
 #scan-another-btn,
-#get-recipes-btn {
+#get-recipes-btn,
+#back-to-list-btn {
   padding: 0.5625rem 1.125rem;
   font-size: 1.5rem;
   border-radius: 0.6rem;

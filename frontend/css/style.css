@@ -74,7 +74,7 @@ body {
 .viewfinder {
   position: relative;
   width: 100%;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 5 / 4;
   background: #1e1e2e;
   border-radius: 0.75rem;
   overflow: hidden;

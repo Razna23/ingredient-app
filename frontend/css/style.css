@@ -65,6 +65,50 @@ body {
   margin-bottom: 1rem;
 }
 
+/* Logo shown above "Scan Ingredient": the user's own uploaded logo image (img/logo.png)
+   plus a text lockup ("SmartChef AI" + a smaller subtitle) built with a serif font
+   already built into every phone/desktop (Georgia, falling back to Times New Roman and
+   then any serif) for a more "culinary/cookbook" feel than the app's default sans-serif
+   - deliberately no @font-face or Google Fonts <link>, so nothing new to host or load. */
+.app-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: 0.7rem;
+}
+
+.app-logo-image {
+  flex-shrink: 0;
+  height: 46px;
+  width: auto;
+}
+
+.app-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.app-logo-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  color: #1b2733;
+  text-transform: uppercase;
+}
+
+.app-logo-subtitle {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  color: #5b6673;
+  text-transform: uppercase;
+}
+
 /* Every screen fills the remaining height of the app shell, so the action
    button(s) at the bottom stay pinned to the bottom of the screen no matter
    how much (or how little) scrollable content sits above them - e.g. the

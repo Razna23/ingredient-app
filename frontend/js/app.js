@@ -128,7 +128,15 @@ captureBtn.addEventListener("click", async () => {
     const res = await apiPost("/api/detect-ingredients", { image });
 
     if (!res.ok) {
-      showAlert(scanStatusEl, "Detection failed. Please try again.", "danger");
+      if (res.status === 429) {
+        showAlert(
+          scanStatusEl,
+          "You've used up today's free Gemini scan limit. Please try again later.",
+          "danger"
+        );
+      } else {
+        showAlert(scanStatusEl, "Detection failed. Please try again.", "danger");
+      }
       return;
     }
 

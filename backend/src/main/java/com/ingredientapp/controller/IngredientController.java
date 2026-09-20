@@ -4,6 +4,7 @@ import com.ingredientapp.dto.ImageRequest;
 import com.ingredientapp.model.Ingredient;
 import com.ingredientapp.model.Recipe;
 import com.ingredientapp.model.RecipeDetail;
+import com.ingredientapp.service.GeminiRateLimitedException;
 import com.ingredientapp.service.GeminiService;
 import com.ingredientapp.service.SpoonacularService;
 import jakarta.servlet.http.HttpSession;
@@ -38,8 +39,19 @@ public class IngredientController {
     }
 
     @PostMapping("/detect-ingredients")
-    public ResponseEntity<List<Ingredient>> detectIngredients(@RequestBody ImageRequest request, HttpSession session) {
-        List<Ingredient> detected = geminiService.detectIngredients(request.getImage());
+    public ResponseEntity<?> detectIngredients(@RequestBody ImageRequest request, HttpSession session) {
+        List<Ingredient> detected;
+        try {
+            detected = geminiService.detectIngredients(request.getImage());
+        } catch (GeminiRateLimitedException e) {
+            // Distinct HTTP status (429) so the front-end can tell "Gemini's quota is used up
+            // for today" apart from a genuine "no ingredients recognized in this frame" result,
+            // instead of both collapsing into the same misleading message.
+            return ResponseEntity.status(429).body(Map.of(
+                    "error", "gemini_rate_limited",
+                    "message", e.getMessage()
+            ));
+        }
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
 
         for (Ingredient newIngredient : detected) {

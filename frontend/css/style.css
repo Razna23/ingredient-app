@@ -93,6 +93,45 @@ body {
   border-radius: 0.6rem;
   padding: 0.6rem;
   background: #fff;
+  cursor: pointer;
+}
+
+.recipe-card:hover,
+.recipe-card:focus {
+  border-color: #86b7fe;
+  outline: none;
+}
+
+.recipe-tap-hint {
+  font-size: 0.75rem;
+  color: #6c8cff;
+  margin-top: 0.15rem;
+}
+
+/* --- Recipe detail screen --- */
+
+.detail-image {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  border-radius: 0.6rem;
+  background: #e3e3e8;
+}
+
+.detail-subheading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.detail-instructions {
+  padding-left: 1.25rem;
+}
+
+.detail-instructions li {
+  margin-bottom: 0.6rem;
+  line-height: 1.4;
 }
 
 .recipe-card img {

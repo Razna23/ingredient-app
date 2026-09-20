@@ -103,8 +103,10 @@ accuracy/performance data instead of working from the mock responses.
    sub-folders, or as two separate repositories - either works with Render).
 2. **Back-end - Render Web Service:**
    - New → Web Service → connect your GitHub repo, root directory `backend/`.
-   - Build command: `mvn clean package -DskipTests`
-   - Start command: `java -jar target/ingredient-app.jar`
+   - Render has no native Java runtime, so choose **Docker** as the language/environment -
+     Render will find and build the `backend/Dockerfile` included in this project
+     automatically. No build/start command fields are needed with Docker; the Dockerfile
+     handles both.
    - Add environment variables: `CLARIFAI_API_KEY`, `SPOONACULAR_API_KEY`,
      `SESSION_COOKIE_SECURE=true`, and once you know your front-end's Render URL,
      `APP_CORS_ALLOWED_ORIGINS=https://your-frontend-name.onrender.com`.

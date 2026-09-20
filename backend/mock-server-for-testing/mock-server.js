@@ -81,10 +81,29 @@ function mockRecipes(ingredients) {
   const joined = ingredients.slice(0, 2).map((i) => i.name).join(" & ");
   const base = capitalise(joined);
   return [
-    { title: `${base} Bake`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+1", usedIngredientCount: Math.min(have, 4), missedIngredientCount: Math.max(0, 5 - have) },
-    { title: `${base} Soup`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+2", usedIngredientCount: Math.min(have, 3), missedIngredientCount: Math.max(0, 4 - have) },
-    { title: `${base} Stir Fry`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+3", usedIngredientCount: Math.min(have, 3), missedIngredientCount: Math.max(0, 5 - have) },
+    { id: 1, title: `${base} Bake`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+1", usedIngredientCount: Math.min(have, 4), missedIngredientCount: Math.max(0, 5 - have) },
+    { id: 2, title: `${base} Soup`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+2", usedIngredientCount: Math.min(have, 3), missedIngredientCount: Math.max(0, 4 - have) },
+    { id: 3, title: `${base} Stir Fry`, imageUrl: "https://via.placeholder.com/300x200?text=Recipe+3", usedIngredientCount: Math.min(have, 3), missedIngredientCount: Math.max(0, 5 - have) },
   ];
+}
+
+function mockRecipeDetail(id, ingredients) {
+  const names = ingredients.map((i) => i.name);
+  const joined = names.slice(0, 2).join(" & ");
+  const ingredientLines = names.length ? names.map((n) => `1 portion ${n}`) : ["1 mystery ingredient"];
+  return {
+    id,
+    title: `${capitalise(joined)} Bake`,
+    imageUrl: "https://via.placeholder.com/300x200?text=Recipe",
+    servings: 2,
+    readyInMinutes: 25,
+    ingredientLines,
+    instructionSteps: [
+      `Prepare and wash all your ingredients (${names.length ? names.join(", ") : "whatever you've scanned"}).`,
+      "Combine everything in a pan or oven dish and season to taste.",
+      `Cook until done, plate up, and enjoy your ${capitalise(joined)}.`,
+    ],
+  };
 }
 
 function sendJson(res, status, body) {
@@ -160,6 +179,12 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     sendJson(res, 200, mockRecipes(session.ingredients));
+    return;
+  }
+
+  const recipeIdMatch = url.pathname.match(/^\/api\/recipes\/(\d+)$/);
+  if (req.method === "GET" && recipeIdMatch) {
+    sendJson(res, 200, mockRecipeDetail(Number(recipeIdMatch[1]), session.ingredients));
     return;
   }
 

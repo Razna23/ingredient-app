@@ -7,6 +7,7 @@ package com.ingredientapp.model;
  */
 public class Recipe {
 
+    private int id;
     private String title;
     private String imageUrl;
     private int usedIngredientCount;
@@ -15,11 +16,20 @@ public class Recipe {
     public Recipe() {
     }
 
-    public Recipe(String title, String imageUrl, int usedIngredientCount, int missedIngredientCount) {
+    public Recipe(int id, String title, String imageUrl, int usedIngredientCount, int missedIngredientCount) {
+        this.id = id;
         this.title = title;
         this.imageUrl = imageUrl;
         this.usedIngredientCount = usedIngredientCount;
         this.missedIngredientCount = missedIngredientCount;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getTitle() {

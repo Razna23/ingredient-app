@@ -3,6 +3,7 @@ package com.ingredientapp.controller;
 import com.ingredientapp.dto.ImageRequest;
 import com.ingredientapp.model.Ingredient;
 import com.ingredientapp.model.Recipe;
+import com.ingredientapp.model.RecipeDetail;
 import com.ingredientapp.service.ClarifaiService;
 import com.ingredientapp.service.SpoonacularService;
 import jakarta.servlet.http.HttpSession;
@@ -76,6 +77,16 @@ public class IngredientController {
         }
         List<Recipe> recipes = spoonacularService.findRecipes(sessionIngredients);
         return ResponseEntity.ok(recipes);
+    }
+
+    @GetMapping("/recipes/{id}")
+    public ResponseEntity<RecipeDetail> getRecipeDetail(@PathVariable int id, HttpSession session) {
+        List<Ingredient> sessionIngredients = getSessionIngredients(session);
+        RecipeDetail detail = spoonacularService.getRecipeDetail(id, sessionIngredients);
+        if (detail == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(detail);
     }
 
     @SuppressWarnings("unchecked")

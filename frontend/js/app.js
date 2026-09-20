@@ -10,7 +10,7 @@
  *
  * IMPORTANT: change BACKEND_URL below once the back-end is deployed to Render.
  */
-const BACKEND_URL = "http://localhost:8080";
+const BACKEND_URL = "https://ingredient-app-backend.onrender.com";
 
 // ---- Screen navigation -----------------------------------------------------
 

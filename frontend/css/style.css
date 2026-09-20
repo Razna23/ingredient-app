@@ -177,6 +177,13 @@ body {
   border-radius: 0.6rem;
 }
 
+/* "View Ingredients" at 1.2x the normal Bootstrap button size. */
+#view-list-btn {
+  padding: 0.45rem 0.9rem;
+  font-size: 1.2rem;
+  border-radius: 0.5rem;
+}
+
 /* Warm gold buttons (View Ingredients / Get Recipes), matching the wireframe */
 .btn-recipes {
   background: #f2c879;

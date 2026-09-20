@@ -1,0 +1,115 @@
+/* Mobile-only layout: the app is deliberately capped at phone width (see Chapter 1:
+   Scope and Limitations - this is a functional prototype designed exclusively for
+   smartphone use). */
+
+body {
+  background: #f2f3f5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Defensive rule: showing/hiding screens, the camera placeholder, and status messages all
+   rely on Bootstrap's .d-none utility class. Found during testing - if Bootstrap's CSS fails
+   to load (CDN outage, offline demo, restrictive network), .d-none would otherwise do nothing
+   and every screen/message would render stacked on top of each other at once. Defining our
+   own copy here removes that single point of failure. */
+.d-none {
+  display: none !important;
+}
+
+.app-shell {
+  max-width: 430px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 1.25rem 1rem 2rem;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.06);
+}
+
+.screen-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* --- Scan screen --- */
+
+.viewfinder {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: #1e1e2e;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+#camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #f2f3f5;
+  text-align: center;
+  padding: 1rem;
+}
+
+.capture-btn {
+  border-radius: 50px;
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+/* --- Ingredient list screen --- */
+
+#ingredient-list .list-group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.remove-ingredient-btn {
+  border: none;
+  background: none;
+  color: #b02a37;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 0.25rem;
+}
+
+/* --- Recipe results screen --- */
+
+.recipe-card {
+  display: flex;
+  gap: 0.75rem;
+  border: 1px solid #e3e3e8;
+  border-radius: 0.6rem;
+  padding: 0.6rem;
+  background: #fff;
+}
+
+.recipe-card img {
+  width: 84px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 0.4rem;
+  flex-shrink: 0;
+  background: #e3e3e8;
+}
+
+.recipe-card .recipe-title {
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.recipe-card .recipe-meta {
+  font-size: 0.85rem;
+  color: #5a5f73;
+}

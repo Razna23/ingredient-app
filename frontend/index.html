@@ -16,25 +16,27 @@
   <section id="scan-screen" class="screen">
     <h1 class="screen-title">Scan Ingredient</h1>
 
-    <div class="viewfinder">
-      <video id="camera-feed" autoplay playsinline muted></video>
-      <canvas id="capture-canvas" class="d-none"></canvas>
-      <div id="camera-placeholder" class="camera-placeholder">
-        <p class="mb-1">Camera access needed</p>
-        <button id="enable-camera-btn" class="btn btn-sm btn-outline-light">Enable Camera</button>
+    <div class="scroll-area">
+      <div class="viewfinder">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <canvas id="capture-canvas" class="d-none"></canvas>
+        <div id="camera-placeholder" class="camera-placeholder">
+          <p class="mb-1">Camera access needed</p>
+          <button id="enable-camera-btn" class="btn btn-sm btn-outline-light">Enable Camera</button>
+        </div>
       </div>
+
+      <div class="text-center mt-3">
+        <button id="capture-btn" class="btn btn-primary btn-lg capture-btn" disabled>Capture</button>
+      </div>
+
+      <p id="scan-count" class="text-center text-muted mt-2">0 ingredients scanned</p>
+
+      <div id="scan-status" class="alert d-none mt-2" role="alert"></div>
     </div>
 
-    <div class="text-center mt-3">
-      <button id="capture-btn" class="btn btn-primary btn-lg capture-btn" disabled>Capture</button>
-    </div>
-
-    <p id="scan-count" class="text-center text-muted mt-2">0 ingredients scanned</p>
-
-    <div id="scan-status" class="alert d-none mt-2" role="alert"></div>
-
-    <div class="d-grid mt-3">
-      <button id="view-list-btn" class="btn btn-outline-secondary">View Ingredients</button>
+    <div class="d-grid screen-footer">
+      <button id="view-list-btn" class="btn btn-recipes">View Ingredients</button>
     </div>
   </section>
 
@@ -42,24 +44,28 @@
   <section id="list-screen" class="screen d-none">
     <h1 class="screen-title">Your Ingredients</h1>
 
-    <ul id="ingredient-list" class="list-group mb-3"></ul>
-    <p id="empty-list-message" class="text-muted text-center d-none">No ingredients scanned yet.</p>
-
-    <div class="d-grid gap-2">
-      <button id="scan-another-btn" class="btn btn-outline-primary">Scan Another</button>
-      <button id="get-recipes-btn" class="btn btn-success">Get Recipes</button>
+    <div class="scroll-area">
+      <ul id="ingredient-list" class="ingredient-list"></ul>
+      <p id="empty-list-message" class="text-muted text-center d-none">No ingredients scanned yet.</p>
     </div>
 
-    <div id="recipes-status" class="alert d-none mt-3" role="alert"></div>
+    <div id="recipes-status" class="alert d-none" role="alert"></div>
+
+    <div class="d-grid gap-2 screen-footer">
+      <button id="scan-another-btn" class="btn btn-primary">Scan Another</button>
+      <button id="get-recipes-btn" class="btn btn-recipes">Get Recipes</button>
+    </div>
   </section>
 
   <!-- ============ RECIPE RESULTS SCREEN ============ -->
   <section id="recipes-screen" class="screen d-none">
     <h1 class="screen-title">Recipe Suggestions</h1>
 
-    <div id="recipe-cards" class="d-flex flex-column gap-3"></div>
+    <div class="scroll-area">
+      <div id="recipe-cards" class="d-flex flex-column gap-3"></div>
+    </div>
 
-    <div class="d-grid mt-3">
+    <div class="d-grid screen-footer">
       <button id="back-to-list-btn" class="btn btn-outline-secondary">Back to Ingredients</button>
     </div>
   </section>
@@ -68,19 +74,21 @@
   <section id="detail-screen" class="screen d-none">
     <h1 id="detail-title" class="screen-title">Recipe</h1>
 
-    <img id="detail-image" class="detail-image" alt="">
+    <div class="scroll-area">
+      <img id="detail-image" class="detail-image" alt="">
 
-    <p id="detail-meta" class="text-center text-muted mt-2 mb-3"></p>
+      <p id="detail-meta" class="text-center text-muted mt-2 mb-3"></p>
 
-    <div id="detail-status" class="alert d-none" role="alert"></div>
+      <div id="detail-status" class="alert d-none" role="alert"></div>
 
-    <h2 class="detail-subheading">Ingredients</h2>
-    <ul id="detail-ingredients" class="list-group mb-3"></ul>
+      <h2 class="detail-subheading">Ingredients</h2>
+      <ul id="detail-ingredients" class="list-group mb-3"></ul>
 
-    <h2 class="detail-subheading">Instructions</h2>
-    <ol id="detail-instructions" class="detail-instructions mb-3"></ol>
+      <h2 class="detail-subheading">Instructions</h2>
+      <ol id="detail-instructions" class="detail-instructions mb-3"></ol>
+    </div>
 
-    <div class="d-grid mt-3">
+    <div class="d-grid screen-footer">
       <button id="back-to-recipes-btn" class="btn btn-outline-secondary">Back to Recipes</button>
     </div>
   </section>

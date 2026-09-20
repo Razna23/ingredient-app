@@ -3,11 +3,14 @@ package com.ingredientapp.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ingredientapp.model.Ingredient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -36,6 +39,8 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 @Service
 public class GeminiService {
+
+    private static final Logger logger = LoggerFactory.getLogger(GeminiService.class);
 
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
 
@@ -104,13 +109,24 @@ public class GeminiService {
         try {
             String requestJson = objectMapper.writeValueAsString(requestBody);
             HttpEntity<String> requestEntity = new HttpEntity<>(requestJson, headers);
-            String responseJson = restTemplate.postForObject(GEMINI_URL, requestEntity, String.class);
+            String responseJson;
+            try {
+                responseJson = restTemplate.postForObject(GEMINI_URL, requestEntity, String.class);
+            } catch (RestClientException e) {
+                // Network failure, timeout, or a non-2xx HTTP response (bad/expired API key,
+                // rate limiting, wrong model name, etc). Logged so a "no ingredients detected"
+                // scan can be told apart from a genuinely failed API call in Render's logs.
+                logger.error("Gemini API call failed (model={}): {}", model, e.getMessage(), e);
+                return results;
+            }
             if (responseJson == null) {
+                logger.warn("Gemini API returned a null response body (model={})", model);
                 return results;
             }
 
             String modelText = extractModelText(responseJson);
             if (modelText == null || modelText.isBlank()) {
+                logger.warn("Gemini response had no usable model_output text. Raw response: {}", responseJson);
                 return results;
             }
 
@@ -121,13 +137,24 @@ public class GeminiService {
                     double confidence = item.path("confidence").asDouble(0.0);
                     if (name != null && !name.isBlank() && confidence >= confidenceThreshold) {
                         results.add(new Ingredient(name, confidence));
+                    } else if (name != null && !name.isBlank()) {
+                        logger.info("Gemini saw '{}' but below confidence threshold ({} < {})",
+                                name, confidence, confidenceThreshold);
                     }
                 }
+                if (results.isEmpty()) {
+                    logger.info("Gemini returned {} candidate(s), none met the confidence threshold. Model text: {}",
+                            ingredientsNode.size(), modelText);
+                }
+            } else {
+                logger.warn("Gemini model_output was not a JSON array as requested. Model text: {}", modelText);
             }
         } catch (Exception e) {
-            // Gemini occasionally deviates from the requested JSON-only format; fail closed
-            // (no ingredients detected for this scan) rather than crashing the request, and
-            // let the user simply try scanning again (see Chapter 6: robustness discussion).
+            // Gemini occasionally deviates from the requested JSON-only format (malformed JSON,
+            // unexpected shape); fail closed (no ingredients detected for this scan) rather than
+            // crashing the request, but log the real cause so it's visible in Render's logs
+            // instead of being indistinguishable from a genuine "nothing recognized" result.
+            logger.error("Failed to parse Gemini response (model={}): {}", model, e.getMessage(), e);
             results.clear();
         }
         return results;

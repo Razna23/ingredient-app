@@ -168,6 +168,15 @@ body {
   opacity: 1;
 }
 
+/* "Scan Another" / "Get Recipes" at 1.5x the normal Bootstrap button size
+   (padding, font size, and border radius all scaled together). */
+#scan-another-btn,
+#get-recipes-btn {
+  padding: 0.5625rem 1.125rem;
+  font-size: 1.5rem;
+  border-radius: 0.6rem;
+}
+
 /* Warm gold buttons (View Ingredients / Get Recipes), matching the wireframe */
 .btn-recipes {
   background: #f2c879;

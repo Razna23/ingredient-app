@@ -201,25 +201,30 @@ body {
 
 /* --- Recipe results screen --- */
 
+/* Each recipe is styled like the gold "View Ingredients" / "Get Recipes"
+   buttons, so the whole list reads as a set of tappable button-like cards. */
 .recipe-card {
   display: flex;
+  align-items: center;
   gap: 0.75rem;
-  border: 1px solid #e3e3e8;
+  border: 1px solid #e3b455;
   border-radius: 0.6rem;
   padding: 0.6rem;
-  background: #fff;
+  background: #f2c879;
+  color: #3a2a08;
   cursor: pointer;
 }
 
 .recipe-card:hover,
 .recipe-card:focus {
-  border-color: #86b7fe;
+  background: #eebd63;
+  border-color: #e3b455;
   outline: none;
 }
 
 .recipe-tap-hint {
   font-size: 0.75rem;
-  color: #6c8cff;
+  color: #5a4110;
   margin-top: 0.15rem;
 }
 
@@ -261,9 +266,10 @@ body {
 .recipe-card .recipe-title {
   font-weight: 600;
   margin-bottom: 0.15rem;
+  color: #3a2a08;
 }
 
 .recipe-card .recipe-meta {
   font-size: 0.85rem;
-  color: #5a5f73;
+  color: #5a4110;
 }

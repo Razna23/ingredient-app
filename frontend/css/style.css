@@ -14,8 +14,16 @@ body {
   height: 100%;
 }
 
+/* Soft, abstract color mesh behind the app card - built from the same green/gold/blue
+   already used for the ingredient pills and buttons, so it reads as part of the same
+   design rather than an unrelated decoration. Pure CSS gradients, no image file needed. */
 body {
-  background: #f2f3f5;
+  background-color: #f2f3f5;
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(143, 217, 160, 0.55) 0%, rgba(143, 217, 160, 0) 45%),
+    radial-gradient(circle at 85% 15%, rgba(242, 200, 121, 0.55) 0%, rgba(242, 200, 121, 0) 45%),
+    radial-gradient(circle at 80% 85%, rgba(110, 168, 255, 0.45) 0%, rgba(110, 168, 255, 0) 50%),
+    radial-gradient(circle at 20% 90%, rgba(242, 200, 121, 0.4) 0%, rgba(242, 200, 121, 0) 45%);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 

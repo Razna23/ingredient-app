@@ -124,8 +124,14 @@ body {
   color: #fff;
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.4rem 0.9rem;
+  padding: 0.4rem 1.1rem;
   border-radius: 50px;
+  /* Without this, a narrow viewfinder could wrap the text onto a second line, which -
+     with no fixed height on this element - visually overlapped the first line instead
+     of cleanly stacking. Keeping it on one line and letting the pill size to fit it
+     (rather than a fixed width that was too narrow for the text) fixes that. */
+  white-space: nowrap;
+  max-width: 90%;
 }
 
 .camera-placeholder {

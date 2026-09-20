@@ -30,6 +30,8 @@ function showScreen(name) {
 
 const video = document.getElementById("camera-feed");
 const canvas = document.getElementById("capture-canvas");
+const capturedPreview = document.getElementById("captured-preview");
+const detectingBadge = document.getElementById("detecting-badge");
 const cameraPlaceholder = document.getElementById("camera-placeholder");
 const captureBtn = document.getElementById("capture-btn");
 const enableCameraBtn = document.getElementById("enable-camera-btn");
@@ -58,13 +60,23 @@ enableCameraBtn.addEventListener("click", startCamera);
 // Attempt automatically on load too, since most browsers only need the one prompt.
 startCamera();
 
-function captureFrameAsBase64() {
-  canvas.width = video.videoWidth || 720;
-  canvas.height = video.videoHeight || 960;
+// Phone cameras commonly capture at 3000px+ on the long side. Sending that whole
+// image to the back-end (and on to Gemini) is most of what makes detection feel
+// slow, since it has to be uploaded from the phone and then processed at full
+// resolution. Downscaling to a still-plenty-sharp 1024px cap shrinks the payload
+// dramatically and speeds up both the upload and the Gemini response, without a
+// noticeable drop in detection accuracy.
+const MAX_CAPTURE_DIMENSION = 1024;
+
+function captureFrame() {
+  const nativeWidth = video.videoWidth || 720;
+  const nativeHeight = video.videoHeight || 960;
+  const scale = Math.min(1, MAX_CAPTURE_DIMENSION / Math.max(nativeWidth, nativeHeight));
+  canvas.width = Math.round(nativeWidth * scale);
+  canvas.height = Math.round(nativeHeight * scale);
   const ctx = canvas.getContext("2d");
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
-  return dataUrl.split(",")[1]; // strip the "data:image/jpeg;base64," prefix
+  return canvas.toDataURL("image/jpeg", 0.8); // full data URL, incl. "data:image/jpeg;base64," prefix
 }
 
 // ---- API helpers ------------------------------------------------------------
@@ -104,8 +116,15 @@ captureBtn.addEventListener("click", async () => {
   captureBtn.textContent = "Detecting...";
   scanStatusEl.classList.add("d-none");
 
+  // Freeze on the photo just taken (like a real camera shutter) instead of
+  // continuing to show the live feed while detection is in progress.
+  const dataUrl = captureFrame();
+  capturedPreview.src = dataUrl;
+  capturedPreview.classList.remove("d-none");
+  detectingBadge.classList.remove("d-none");
+
   try {
-    const image = captureFrameAsBase64();
+    const image = dataUrl.split(",")[1]; // strip the "data:image/jpeg;base64," prefix
     const res = await apiPost("/api/detect-ingredients", { image });
 
     if (!res.ok) {
@@ -130,6 +149,8 @@ captureBtn.addEventListener("click", async () => {
   } finally {
     captureBtn.disabled = false;
     captureBtn.textContent = "Capture";
+    detectingBadge.classList.add("d-none");
+    capturedPreview.classList.add("d-none");
   }
 });
 
@@ -162,7 +183,7 @@ function renderIngredientList(ingredients) {
 
   ingredients.forEach((ingredient) => {
     const li = document.createElement("li");
-    li.className = "list-group-item";
+    li.className = "ingredient-pill";
 
     const label = document.createElement("span");
     const pct = Math.round(ingredient.confidence * 100);

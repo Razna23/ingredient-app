@@ -1,10 +1,21 @@
 # AI-Powered Ingredient Detection and Recipe Generation
 
 This is the working prototype behind the dissertation: a mobile-only web app that detects
-cooking ingredients from a phone camera (Clarifai Food Model API) and suggests recipes based
-on what's been detected (Spoonacular API). It matches the architecture, endpoints, and data
-model documented in Chapters 1-3 (system architecture, use case diagram, wireframes, session
-data model).
+cooking ingredients from a phone camera (Google Gemini API) and suggests recipes based on
+what's been detected (Spoonacular API). It matches the architecture, endpoints, and data model
+documented in Chapters 1-3 (system architecture, use case diagram, wireframes, session data
+model).
+
+**Note on the detection API:** the project brief and Chapter 3 originally named Clarifai (with
+Google Vision API / Amazon Rekognition as alternatives). During development, Clarifai's site
+became unreachable from multiple independent networks (different ISPs, different countries),
+and separately its sign-up flow hit an unrelated Stripe billing error - both outside this
+project's control. Google Cloud Vision and Amazon Rekognition were also considered, but both
+require a card-linked billing account even for their free tiers. Google's Gemini API was chosen
+instead: it has no dedicated "food model", so `GeminiService` prompts a general-purpose
+multimodal model to identify ingredients and return them as structured JSON, then parses that
+into the same `Ingredient` shape the rest of the system already used. This substitution is
+documented as an implementation challenge in Chapter 4.
 
 ```
 ingredient-app/
@@ -29,7 +40,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-This starts the API on `http://localhost:8080`. With no `CLARIFAI_API_KEY` or
+This starts the API on `http://localhost:8080`. With no `GEMINI_API_KEY` or
 `SPOONACULAR_API_KEY` set, both services automatically fall back to mock responses - you'll
 see plausible-looking ingredients and recipes without needing any account yet.
 
@@ -63,22 +74,21 @@ development (see Chapter 4 for how this was written up as an implementation chal
 
 ## 2. Getting real API keys
 
-### Clarifai (ingredient detection)
+### Gemini (ingredient detection)
 
-1. Go to https://clarifai.com and click **Sign Up** (a free account is enough for this
-   project - the free tier includes 1,000 operations per month, as discussed in Chapter 1).
-2. Once logged in, go to your **Personal Access Tokens** page (under your account settings,
-   usually **Security** or **API Keys**) and create a new key/token.
-3. Copy the key.
-4. Run the back-end with it set as an environment variable:
+1. Go to https://aistudio.google.com, sign in with a Google account, and click **Get API Key**
+   → **Create API key**. No credit card is required for the free tier (1,500 requests/day at
+   the time of writing).
+2. Copy the key.
+3. Run the back-end with it set as an environment variable:
    ```bash
-   CLARIFAI_API_KEY=your-key-here mvn spring-boot:run
+   GEMINI_API_KEY=your-key-here mvn spring-boot:run
    ```
-   Once this is set, `ClarifaiService` automatically switches out of mock mode and calls the
-   real Food Model API (model ID `bd367be194cf45149e75f01d59f77ba7`, Clarifai's public food/
-   ingredient recognition model). If Clarifai has changed this model's ID by the time you sign
-   up, your dashboard will show the current one under **Explore → Models → Food** - update the
-   `CLARIFAI_MODEL_ID` constant in `ClarifaiService.java` if it differs.
+   Once this is set, `GeminiService` automatically switches out of mock mode and calls the
+   Gemini API. The model name defaults to `gemini-3.8-flash` (set via `gemini.model` /
+   `GEMINI_MODEL`) - if Google has renamed or retired that model by the time you sign up,
+   check the current model names listed at https://aistudio.google.com and set the
+   `GEMINI_MODEL` environment variable to match.
 
 ### Spoonacular (recipe generation)
 
@@ -88,7 +98,7 @@ development (see Chapter 4 for how this was written up as an implementation chal
 3. Copy the key from your dashboard (**Profile → API Keys**).
 4. Run the back-end with it set too:
    ```bash
-   CLARIFAI_API_KEY=your-clarifai-key SPOONACULAR_API_KEY=your-spoonacular-key mvn spring-boot:run
+   GEMINI_API_KEY=your-gemini-key SPOONACULAR_API_KEY=your-spoonacular-key mvn spring-boot:run
    ```
 
 With both keys set, the app is now doing real ingredient detection and real recipe lookups -
@@ -107,7 +117,7 @@ accuracy/performance data instead of working from the mock responses.
      Render will find and build the `backend/Dockerfile` included in this project
      automatically. No build/start command fields are needed with Docker; the Dockerfile
      handles both.
-   - Add environment variables: `CLARIFAI_API_KEY`, `SPOONACULAR_API_KEY`,
+   - Add environment variables: `GEMINI_API_KEY`, `SPOONACULAR_API_KEY`,
      `SESSION_COOKIE_SECURE=true`, and once you know your front-end's Render URL,
      `APP_CORS_ALLOWED_ORIGINS=https://your-frontend-name.onrender.com`.
 3. **Front-end - Render Static Site:**
@@ -124,7 +134,7 @@ accuracy/performance data instead of working from the mock responses.
 
 ## 4. What's mock vs real, and why this matters for the dissertation
 
-- `ClarifaiService.isMockMode()` / `SpoonacularService.isMockMode()` return `true` whenever
+- `GeminiService.isMockMode()` / `SpoonacularService.isMockMode()` return `true` whenever
   the corresponding API key is blank, which is exactly how the fallback is triggered - no
   separate flag to remember to flip.
 - The `backend/mock-server-for-testing/` folder is **not part of the deliverable**. It's a

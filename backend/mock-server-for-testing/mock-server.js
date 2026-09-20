@@ -4,7 +4,7 @@
  * back-end cannot be compiled. It deliberately mirrors the exact same routes, JSON shapes,
  * mock-detection pool, and cookie-based session behaviour as:
  *   - com.ingredientapp.controller.IngredientController
- *   - com.ingredientapp.service.ClarifaiService (mock mode)
+ *   - com.ingredientapp.service.GeminiService (mock mode)
  *   - com.ingredientapp.service.SpoonacularService (mock mode)
  *
  * This file is NOT part of the deliverable and is not deployed anywhere - it only exists to
@@ -36,7 +36,7 @@ const POOL = [
   { name: "chicken breast", confidence: 0.78 },
   { name: "bell pepper", confidence: 0.74 },
   { name: "potato", confidence: 0.71 },
-  { name: "carrot", confidence: 0.69 }, // deliberately below threshold, same as ClarifaiService
+  { name: "carrot", confidence: 0.69 }, // deliberately below threshold, same as GeminiService
 ];
 
 const sessions = new Map(); // sessionId -> { ingredients: [] }
@@ -67,7 +67,7 @@ function getOrCreateSession(req, res) {
 
 function mockDetect() {
   const shuffled = [...POOL].sort(() => Math.random() - 0.5);
-  const count = 1 + Math.floor(Math.random() * 2); // 1 or 2, same as ClarifaiService
+  const count = 1 + Math.floor(Math.random() * 2); // 1 or 2, same as GeminiService
   return shuffled.slice(0, count).filter((i) => i.confidence >= CONFIDENCE_THRESHOLD);
 }
 

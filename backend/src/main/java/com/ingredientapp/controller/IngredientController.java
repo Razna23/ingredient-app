@@ -4,7 +4,7 @@ import com.ingredientapp.dto.ImageRequest;
 import com.ingredientapp.model.Ingredient;
 import com.ingredientapp.model.Recipe;
 import com.ingredientapp.model.RecipeDetail;
-import com.ingredientapp.service.ClarifaiService;
+import com.ingredientapp.service.GeminiService;
 import com.ingredientapp.service.SpoonacularService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
@@ -29,17 +29,17 @@ public class IngredientController {
 
     private static final String SESSION_ATTRIBUTE = "ingredients";
 
-    private final ClarifaiService clarifaiService;
+    private final GeminiService geminiService;
     private final SpoonacularService spoonacularService;
 
-    public IngredientController(ClarifaiService clarifaiService, SpoonacularService spoonacularService) {
-        this.clarifaiService = clarifaiService;
+    public IngredientController(GeminiService geminiService, SpoonacularService spoonacularService) {
+        this.geminiService = geminiService;
         this.spoonacularService = spoonacularService;
     }
 
     @PostMapping("/detect-ingredients")
     public ResponseEntity<List<Ingredient>> detectIngredients(@RequestBody ImageRequest request, HttpSession session) {
-        List<Ingredient> detected = clarifaiService.detectIngredients(request.getImage());
+        List<Ingredient> detected = geminiService.detectIngredients(request.getImage());
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
 
         for (Ingredient newIngredient : detected) {

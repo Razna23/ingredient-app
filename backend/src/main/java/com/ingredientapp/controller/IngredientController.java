@@ -75,15 +75,16 @@ public class IngredientController {
 
     @PostMapping("/ingredients")
     public ResponseEntity<?> addIngredient(@RequestBody ManualIngredientRequest request, HttpSession session) {
-        String name = request.getName() == null ? "" : request.getName().trim();
-        if (name.isEmpty()) {
+        String rawName = request.getName() == null ? "" : request.getName().trim();
+        if (rawName.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", "Ingredient name cannot be empty."
             ));
         }
-        if (name.length() > 40) {
-            name = name.substring(0, 40);
-        }
+        // A separate final variable (rather than reassigning rawName itself) because
+        // the lambda below captures it, and Java only allows a lambda to capture a
+        // local variable that is never reassigned after its first value.
+        final String name = rawName.length() > 40 ? rawName.substring(0, 40) : rawName;
 
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
         boolean alreadyPresent = sessionIngredients.stream()

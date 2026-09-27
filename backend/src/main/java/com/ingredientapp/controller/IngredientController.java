@@ -5,7 +5,7 @@ import com.ingredientapp.dto.ManualIngredientRequest;
 import com.ingredientapp.model.Ingredient;
 import com.ingredientapp.model.Recipe;
 import com.ingredientapp.model.RecipeDetail;
-import com.ingredientapp.service.GeminiRateLimitedException;
+import com.ingredientapp.service.ApiRateLimitedException;
 import com.ingredientapp.service.GeminiService;
 import com.ingredientapp.service.SpoonacularService;
 import jakarta.servlet.http.HttpSession;
@@ -37,10 +37,10 @@ public class IngredientController {
         List<Ingredient> detected;
         try {
             detected = geminiService.detectIngredients(request.getImage());
-        } catch (GeminiRateLimitedException e) {
+        } catch (ApiRateLimitedException e) {
             // 429 so the front-end knows it's a quota issue, not just no ingredients found
             return ResponseEntity.status(429).body(Map.of(
-                    "error", "gemini_rate_limited",
+                    "error", "rate_limited",
                     "message", e.getMessage()
             ));
         }
@@ -102,14 +102,29 @@ public class IngredientController {
                     "error", "No ingredients in this session yet. Scan at least one ingredient first."
             ));
         }
-        List<Recipe> recipes = spoonacularService.findRecipes(sessionIngredients);
-        return ResponseEntity.ok(recipes);
+        try {
+            List<Recipe> recipes = spoonacularService.findRecipes(sessionIngredients);
+            return ResponseEntity.ok(recipes);
+        } catch (ApiRateLimitedException e) {
+            return ResponseEntity.status(429).body(Map.of(
+                    "error", "rate_limited",
+                    "message", e.getMessage()
+            ));
+        }
     }
 
     @GetMapping("/recipes/{id}")
-    public ResponseEntity<RecipeDetail> getRecipeDetail(@PathVariable int id, HttpSession session) {
+    public ResponseEntity<?> getRecipeDetail(@PathVariable int id, HttpSession session) {
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
-        RecipeDetail detail = spoonacularService.getRecipeDetail(id, sessionIngredients);
+        RecipeDetail detail;
+        try {
+            detail = spoonacularService.getRecipeDetail(id, sessionIngredients);
+        } catch (ApiRateLimitedException e) {
+            return ResponseEntity.status(429).body(Map.of(
+                    "error", "rate_limited",
+                    "message", e.getMessage()
+            ));
+        }
         if (detail == null) {
             return ResponseEntity.notFound().build();
         }

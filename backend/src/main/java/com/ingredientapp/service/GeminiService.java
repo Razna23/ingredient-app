@@ -45,7 +45,7 @@ public class GeminiService {
     @Value("${gemini.api.key:}")
     private String apiKey;
 
-    @Value("${gemini.model:gemini-3.1-flash-lite}")
+    @Value("${gemini.model:gemini-3.5-flash-lite}")
     private String model;
 
     @Value("${gemini.confidence.threshold:0.70}")

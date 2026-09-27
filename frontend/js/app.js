@@ -225,6 +225,59 @@ function capitalise(text) {
   return text.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// ---- Manually add an ingredient by text ----------------------------------------
+
+const addIngredientToggleBtn = document.getElementById("add-ingredient-toggle-btn");
+const addIngredientForm = document.getElementById("add-ingredient-form");
+const addIngredientInput = document.getElementById("add-ingredient-input");
+const addIngredientCancelBtn = document.getElementById("add-ingredient-cancel-btn");
+const addIngredientStatusEl = document.getElementById("add-ingredient-status");
+
+function openAddIngredientForm() {
+  addIngredientToggleBtn.classList.add("d-none");
+  addIngredientForm.classList.remove("d-none");
+  addIngredientStatusEl.classList.add("d-none");
+  addIngredientInput.focus();
+}
+
+function closeAddIngredientForm() {
+  addIngredientForm.classList.add("d-none");
+  addIngredientToggleBtn.classList.remove("d-none");
+  addIngredientInput.value = "";
+}
+
+addIngredientToggleBtn.addEventListener("click", openAddIngredientForm);
+
+addIngredientCancelBtn.addEventListener("click", () => {
+  closeAddIngredientForm();
+  addIngredientStatusEl.classList.add("d-none");
+});
+
+addIngredientForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = addIngredientInput.value.trim();
+  if (!name) {
+    return;
+  }
+
+  try {
+    const res = await apiPost("/api/ingredients", { name });
+    if (!res.ok) {
+      const err = await res.json();
+      showAlert(addIngredientStatusEl, err.error || "Could not add that ingredient.", "danger");
+      return;
+    }
+    const ingredients = await res.json();
+    renderIngredientList(ingredients);
+    currentIngredientCount = ingredients.length;
+    scanCountEl.textContent = `${currentIngredientCount} ingredient${currentIngredientCount === 1 ? "" : "s"} scanned`;
+    closeAddIngredientForm();
+  } catch (err) {
+    console.error(err);
+    showAlert(addIngredientStatusEl, "Could not reach the server. Is the back-end running?", "danger");
+  }
+});
+
 document.getElementById("scan-another-btn").addEventListener("click", () => {
   showScreen("scan");
 });

@@ -208,7 +208,7 @@ function renderIngredientList(ingredients) {
 
     const label = document.createElement("span");
     const pct = Math.round(ingredient.confidence * 100);
-    label.textContent = `${capitalise(ingredient.name)} (${pct}%)`;
+    label.textContent = `${capitalise(ingredient.name)} (${pct}% accuracy)`;
 
     const removeBtn = document.createElement("button");
     removeBtn.className = "remove-ingredient-btn";

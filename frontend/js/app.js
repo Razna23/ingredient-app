@@ -300,8 +300,16 @@ document.getElementById("get-recipes-btn").addEventListener("click", async () =>
   try {
     const res = await apiGet("/api/recipes");
     if (!res.ok) {
-      const err = await res.json();
-      showAlert(recipesStatusEl, err.error || "Could not fetch recipes.", "warning");
+      if (res.status === 429) {
+        showAlert(
+          recipesStatusEl,
+          "You've used up today's free recipe search limit. Please try again later.",
+          "danger"
+        );
+      } else {
+        const err = await res.json();
+        showAlert(recipesStatusEl, err.error || "Could not fetch recipes.", "warning");
+      }
       return;
     }
     const recipes = await res.json();
@@ -393,7 +401,15 @@ async function loadRecipeDetail(id) {
   try {
     const res = await apiGet(`/api/recipes/${id}`);
     if (!res.ok) {
-      showAlert(detailStatusEl, "Could not load this recipe. Please try another one.", "danger");
+      if (res.status === 429) {
+        showAlert(
+          detailStatusEl,
+          "You've used up today's free recipe search limit. Please try again later.",
+          "danger"
+        );
+      } else {
+        showAlert(detailStatusEl, "Could not load this recipe. Please try another one.", "danger");
+      }
       detailTitleEl.textContent = "Recipe";
       return;
     }

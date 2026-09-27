@@ -10,7 +10,7 @@
  *
  * IMPORTANT: change BACKEND_URL below once the back-end is deployed to Render.
  */
-const BACKEND_URL = "https://smartchefai.onrender.com";
+const BACKEND_URL = "https://smartchef-ai.onrender.com";
 
 // ---- Screen navigation -----------------------------------------------------
 

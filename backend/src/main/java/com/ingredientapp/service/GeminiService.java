@@ -18,10 +18,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
-/* Sends a photo to Gemini and asks it to identify the ingredients in it.
-   Runs in mock mode until gemini.api.key (or GEMINI_API_KEY on Render) is set. */
+/* Sends a photo to Gemini and asks it to identify the ingredients in it. */
 @Service
 public class GeminiService {
 
@@ -51,15 +49,8 @@ public class GeminiService {
     @Value("${gemini.confidence.threshold:0.70}")
     private double confidenceThreshold;
 
-    public boolean isMockMode() {
-        return apiKey == null || apiKey.isBlank();
-    }
-
     /* Detects ingredients in a base64 JPEG. Only keeps ones above the confidence threshold. */
     public List<Ingredient> detectIngredients(String base64Image) {
-        if (isMockMode()) {
-            return mockDetect();
-        }
         return callGemini(base64Image);
     }
 
@@ -173,30 +164,5 @@ public class GeminiService {
             }
         }
         return trimmed.trim();
-    }
-
-    /* Fakes a scan result so the app works without a real Gemini key. */
-    private List<Ingredient> mockDetect() {
-        List<Ingredient> pool = List.of(
-                new Ingredient("onion", 0.93),
-                new Ingredient("tomato", 0.89),
-                new Ingredient("garlic", 0.85),
-                new Ingredient("cheese", 0.81),
-                new Ingredient("chicken breast", 0.78),
-                new Ingredient("bell pepper", 0.74),
-                new Ingredient("potato", 0.71),
-                new Ingredient("carrot", 0.69) // below the default threshold on purpose
-        );
-        List<Ingredient> shuffled = new ArrayList<>(pool);
-        java.util.Collections.shuffle(shuffled, ThreadLocalRandom.current());
-        int count = 1 + ThreadLocalRandom.current().nextInt(2); // 1 or 2 per scan
-        List<Ingredient> detected = new ArrayList<>();
-        for (int i = 0; i < count; i++) {
-            Ingredient candidate = shuffled.get(i);
-            if (candidate.getConfidence() >= confidenceThreshold) {
-                detected.add(candidate);
-            }
-        }
-        return detected;
     }
 }

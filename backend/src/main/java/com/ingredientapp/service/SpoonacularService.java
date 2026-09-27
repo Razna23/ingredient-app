@@ -14,8 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/* Calls Spoonacular's "find by ingredients" API to get recipe suggestions.
-   Runs in mock mode until spoonacular.api.key (or SPOONACULAR_API_KEY on Render) is set. */
+/* Calls Spoonacular's "find by ingredients" API to get recipe suggestions. */
 @Service
 public class SpoonacularService {
 
@@ -27,15 +26,8 @@ public class SpoonacularService {
     @Value("${spoonacular.api.key:}")
     private String apiKey;
 
-    public boolean isMockMode() {
-        return apiKey == null || apiKey.isBlank();
-    }
-
     /* Finds recipes that use as many of the given ingredients as possible. */
     public List<Recipe> findRecipes(List<Ingredient> ingredients) {
-        if (isMockMode()) {
-            return mockRecipes(ingredients);
-        }
         return callSpoonacular(ingredients);
     }
 
@@ -80,10 +72,6 @@ public class SpoonacularService {
     /* Gets full recipe info (ingredient amounts + steps) for one recipe. */
     @SuppressWarnings("unchecked")
     public RecipeDetail getRecipeDetail(int id, List<Ingredient> sessionIngredients) {
-        if (isMockMode()) {
-            return mockRecipeDetail(id, sessionIngredients);
-        }
-
         String url = UriComponentsBuilder.fromHttpUrl(SPOONACULAR_INFO_URL)
                 .queryParam("includeNutrition", false)
                 .queryParam("apiKey", apiKey)
@@ -135,49 +123,4 @@ public class SpoonacularService {
         );
     }
 
-    private RecipeDetail mockRecipeDetail(int id, List<Ingredient> sessionIngredients) {
-        List<String> names = sessionIngredients.stream().map(Ingredient::getName).collect(Collectors.toList());
-        String joined = String.join(" & ", names.stream().limit(2).collect(Collectors.toList()));
-
-        List<String> ingredientLines = names.isEmpty()
-                ? List.of("1 mystery ingredient")
-                : names.stream().map(n -> "1 portion " + n).collect(Collectors.toList());
-
-        List<String> instructionSteps = List.of(
-                "Prepare and wash all your ingredients (" + (names.isEmpty() ? "whatever you've scanned" : String.join(", ", names)) + ").",
-                "Combine everything in a pan or oven dish and season to taste.",
-                "Cook until done, plate up, and enjoy your " + capitalise(joined) + "."
-        );
-
-        return new RecipeDetail(id, capitalise(joined) + " Bake", "https://via.placeholder.com/300x200?text=Recipe",
-                2, 25, ingredientLines, instructionSteps);
-    }
-
-    private List<Recipe> mockRecipes(List<Ingredient> ingredients) {
-        int have = ingredients.size();
-        List<String> names = ingredients.stream().map(Ingredient::getName).collect(Collectors.toList());
-        String joined = String.join(" & ", names.stream().limit(2).collect(Collectors.toList()));
-
-        List<Recipe> recipes = new ArrayList<>();
-        recipes.add(new Recipe(1, capitalise(joined) + " Bake", "https://via.placeholder.com/300x200?text=Recipe+1",
-                Math.min(have, 4), Math.max(0, 5 - have)));
-        recipes.add(new Recipe(2, capitalise(joined) + " Soup", "https://via.placeholder.com/300x200?text=Recipe+2",
-                Math.min(have, 3), Math.max(0, 4 - have)));
-        recipes.add(new Recipe(3, capitalise(joined) + " Stir Fry", "https://via.placeholder.com/300x200?text=Recipe+3",
-                Math.min(have, 3), Math.max(0, 5 - have)));
-        return recipes;
-    }
-
-    private String capitalise(String text) {
-        if (text == null || text.isBlank()) {
-            return "Mystery";
-        }
-        String[] words = text.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (String w : words) {
-            if (w.isBlank()) continue;
-            sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1)).append(" ");
-        }
-        return sb.toString().trim();
-    }
 }

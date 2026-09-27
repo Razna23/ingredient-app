@@ -354,6 +354,13 @@ function renderRecipes(recipes) {
     hint.textContent = "Tap for full recipe";
 
     info.appendChild(title);
+    // nothing extra needed for this one - flag it before the "uses X" line
+    if (recipe.missedIngredientCount === 0) {
+      const readyBadge = document.createElement("div");
+      readyBadge.className = "recipe-ready-badge";
+      readyBadge.textContent = "Ready to cook now";
+      info.appendChild(readyBadge);
+    }
     info.appendChild(meta);
     info.appendChild(hint);
     card.appendChild(img);

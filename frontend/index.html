@@ -56,6 +56,18 @@
     <div class="scroll-area">
       <ul id="ingredient-list" class="ingredient-list"></ul>
       <p id="empty-list-message" class="text-muted text-center d-none">No ingredients scanned yet.</p>
+
+      <button id="add-ingredient-toggle-btn" type="button" class="btn btn-outline-secondary btn-sm add-ingredient-toggle-btn">+ Add Ingredient</button>
+
+      <form id="add-ingredient-form" class="add-ingredient-form d-none">
+        <input type="text" id="add-ingredient-input" class="form-control" placeholder="e.g. onion" maxlength="40" autocomplete="off">
+        <div class="add-ingredient-actions">
+          <button type="submit" class="btn btn-primary btn-sm">Add</button>
+          <button type="button" id="add-ingredient-cancel-btn" class="btn btn-outline-secondary btn-sm">Cancel</button>
+        </div>
+      </form>
+
+      <div id="add-ingredient-status" class="alert d-none mt-2" role="alert"></div>
     </div>
 
     <div id="recipes-status" class="alert d-none" role="alert"></div>

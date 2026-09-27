@@ -1,6 +1,7 @@
 package com.ingredientapp.controller;
 
 import com.ingredientapp.dto.ImageRequest;
+import com.ingredientapp.dto.ManualIngredientRequest;
 import com.ingredientapp.model.Ingredient;
 import com.ingredientapp.model.Recipe;
 import com.ingredientapp.model.RecipeDetail;
@@ -17,9 +18,10 @@ import java.util.Map;
 
 /**
  * REST controller implementing the two endpoints described in Chapter 3 (Back-End Design),
- * plus two small additions used by the front-end: GET /api/ingredients (so a page refresh can
- * redraw the list) and DELETE /api/ingredients/{name} (FR5: manual removal of an incorrectly
- * detected ingredient).
+ * plus a few small additions used by the front-end: GET /api/ingredients (so a page refresh can
+ * redraw the list), DELETE /api/ingredients/{name} (FR5: manual removal of an incorrectly
+ * detected ingredient), and POST /api/ingredients (manually typing in an ingredient Gemini
+ * missed, or one the user already has on hand, without needing a camera scan at all).
  *
  * Ingredients are held per-session using Spring's built-in HttpSession (in-memory, no database
  * - see Figure 5: Session Data Model and the Design Decisions table in Chapter 3).
@@ -69,6 +71,31 @@ public class IngredientController {
     @GetMapping("/ingredients")
     public ResponseEntity<List<Ingredient>> getIngredients(HttpSession session) {
         return ResponseEntity.ok(getSessionIngredients(session));
+    }
+
+    @PostMapping("/ingredients")
+    public ResponseEntity<?> addIngredient(@RequestBody ManualIngredientRequest request, HttpSession session) {
+        String name = request.getName() == null ? "" : request.getName().trim();
+        if (name.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Ingredient name cannot be empty."
+            ));
+        }
+        if (name.length() > 40) {
+            name = name.substring(0, 40);
+        }
+
+        List<Ingredient> sessionIngredients = getSessionIngredients(session);
+        boolean alreadyPresent = sessionIngredients.stream()
+                .anyMatch(existing -> existing.getName().equalsIgnoreCase(name));
+        if (!alreadyPresent) {
+            // Confidence 1.0: the user typed this themselves, so there's no detection
+            // uncertainty to represent - it's simply above every confidence threshold.
+            sessionIngredients.add(new Ingredient(name, 1.0));
+        }
+
+        session.setAttribute(SESSION_ATTRIBUTE, sessionIngredients);
+        return ResponseEntity.ok(sessionIngredients);
     }
 
     @DeleteMapping("/ingredients/{name}")

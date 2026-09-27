@@ -46,7 +46,7 @@ public class SpoonacularService {
 
         String url = UriComponentsBuilder.fromHttpUrl(SPOONACULAR_URL)
                 .queryParam("ingredients", ingredientParam)
-                .queryParam("number", 5)
+                .queryParam("number", 30)
                 .queryParam("ranking", 2)
                 .queryParam("ignorePantry", true)
                 .queryParam("apiKey", apiKey)

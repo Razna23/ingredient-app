@@ -342,3 +342,15 @@ body {
   font-size: 0.85rem;
   color: #5a4110;
 }
+
+/* shown on a recipe card when it needs nothing you don't already have */
+.recipe-ready-badge {
+  display: inline-block;
+  background: #8fd9a0;
+  color: #17351f;
+  font-weight: 600;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 50px;
+  margin-bottom: 0.25rem;
+}

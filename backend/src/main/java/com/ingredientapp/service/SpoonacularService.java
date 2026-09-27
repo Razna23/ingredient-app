@@ -5,6 +5,7 @@ import com.ingredientapp.model.Recipe;
 import com.ingredientapp.model.RecipeDetail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -52,7 +53,14 @@ public class SpoonacularService {
                 .queryParam("apiKey", apiKey)
                 .toUriString();
 
-        Map[] response = restTemplate.getForObject(url, Map[].class);
+        Map[] response;
+        try {
+            response = restTemplate.getForObject(url, Map[].class);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            // free tier daily quota hit, same as Gemini's 429 handling
+            throw new ApiRateLimitedException(
+                    "The recipe search API's daily free-tier quota has been used up. Try again later.");
+        }
         List<Recipe> recipes = new ArrayList<>();
         if (response == null) {
             return recipes;
@@ -82,7 +90,13 @@ public class SpoonacularService {
                 .buildAndExpand(id)
                 .toUriString();
 
-        Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+        Map<String, Object> response;
+        try {
+            response = restTemplate.getForObject(url, Map.class);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new ApiRateLimitedException(
+                    "The recipe search API's daily free-tier quota has been used up. Try again later.");
+        }
         if (response == null) {
             return null;
         }

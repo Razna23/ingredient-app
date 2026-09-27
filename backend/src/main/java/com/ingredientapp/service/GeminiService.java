@@ -96,7 +96,7 @@ public class GeminiService {
             } catch (HttpClientErrorException.TooManyRequests e) {
                 // free tier daily quota hit, not a normal rate limit
                 logger.warn("Gemini API quota/rate limit hit (model={}): {}", model, e.getMessage());
-                throw new GeminiRateLimitedException(
+                throw new ApiRateLimitedException(
                         "The Gemini API daily free-tier quota has been used up. Try again later.");
             } catch (RestClientException e) {
                 // network error or bad API call, log it and return nothing
@@ -133,7 +133,7 @@ public class GeminiService {
             } else {
                 logger.warn("Gemini model_output was not a JSON array as requested. Model text: {}", modelText);
             }
-        } catch (GeminiRateLimitedException e) {
+        } catch (ApiRateLimitedException e) {
             // rethrow, don't let this get swallowed by the catch below
             throw e;
         } catch (Exception e) {

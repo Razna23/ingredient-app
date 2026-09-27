@@ -26,6 +26,50 @@ function showScreen(name) {
   screens[name].classList.remove("d-none");
 }
 
+// ---- Browser/back-button history integration --------------------------------
+//
+// Without this, every screen change only ever toggled .d-none classes - it never
+// touched the browser's history stack. That meant the phone's hardware/gesture
+// back button had nothing "in-app" to go back to, so it fell through to whatever
+// page the browser had open before this one (see the bug report: pressing back
+// on the recipe screen left the app entirely instead of returning to the
+// ingredient list). Fixed by pushing a history entry for every forward
+// navigation (navigateTo) and re-rendering the right screen when the browser
+// fires "popstate" (back/forward button), rather than relying on remembering
+// history entries).
+//
+// The in-app "Back to ..." buttons now simply call history.back() instead of
+// jumping straight to a screen, so they and the phone's real back button walk
+// the exact same history stack and can never get out of sync with each other.
+
+function renderState(state) {
+  if (!state) {
+    // No state (or the user has gone back past the very first entry we set below) -
+    // fall back to the scan screen rather than showing nothing.
+    showScreen("scan");
+    return;
+  }
+  showScreen(state.screen);
+  if (state.screen === "list") {
+    loadIngredientList();
+  } else if (state.screen === "detail" && state.recipeId != null) {
+    loadRecipeDetail(state.recipeId);
+  }
+}
+
+function navigateTo(screenName, extraState) {
+  history.pushState(Object.assign({ screen: screenName }, extraState), "");
+  showScreen(screenName);
+}
+
+// Tag the screen that was already showing on page load, so that navigating back
+// to it (rather than out of the app) still renders correctly.
+history.replaceState({ screen: "scan" }, "");
+
+window.addEventListener("popstate", (event) => {
+  renderState(event.state);
+});
+
 // ---- Camera setup (getUserMedia, rear-facing camera) -----------------------
 
 const video = document.getElementById("camera-feed");
@@ -163,7 +207,7 @@ captureBtn.addEventListener("click", async () => {
 });
 
 document.getElementById("view-list-btn").addEventListener("click", () => {
-  showScreen("list");
+  navigateTo("list");
   loadIngredientList();
 });
 
@@ -279,7 +323,7 @@ addIngredientForm.addEventListener("submit", async (e) => {
 });
 
 document.getElementById("scan-another-btn").addEventListener("click", () => {
-  showScreen("scan");
+  navigateTo("scan");
 });
 
 document.getElementById("get-recipes-btn").addEventListener("click", async () => {
@@ -293,7 +337,7 @@ document.getElementById("get-recipes-btn").addEventListener("click", async () =>
     }
     const recipes = await res.json();
     renderRecipes(recipes);
-    showScreen("recipes");
+    navigateTo("recipes");
   } catch (err) {
     console.error(err);
     showAlert(recipesStatusEl, "Could not reach the server. Is the back-end running?", "danger");
@@ -350,7 +394,7 @@ function renderRecipes(recipes) {
 }
 
 document.getElementById("back-to-list-btn").addEventListener("click", () => {
-  showScreen("list");
+  history.back();
 });
 
 // ---- Recipe detail screen behaviour -------------------------------------------
@@ -362,8 +406,7 @@ const detailStatusEl = document.getElementById("detail-status");
 const detailIngredientsEl = document.getElementById("detail-ingredients");
 const detailInstructionsEl = document.getElementById("detail-instructions");
 
-async function openRecipeDetail(id) {
-  showScreen("detail");
+async function loadRecipeDetail(id) {
   detailTitleEl.textContent = "Loading recipe...";
   detailImageEl.classList.add("d-none");
   detailMetaEl.textContent = "";
@@ -385,6 +428,11 @@ async function openRecipeDetail(id) {
     showAlert(detailStatusEl, "Could not reach the server. Is the back-end running?", "danger");
     detailTitleEl.textContent = "Recipe";
   }
+}
+
+function openRecipeDetail(id) {
+  navigateTo("detail", { recipeId: id });
+  loadRecipeDetail(id);
 }
 
 function renderRecipeDetail(detail) {
@@ -418,5 +466,5 @@ function renderRecipeDetail(detail) {
 }
 
 document.getElementById("back-to-recipes-btn").addEventListener("click", () => {
-  showScreen("recipes");
+  history.back();
 });

@@ -1,18 +1,10 @@
 /**
- * Front-end logic for the AI-Powered Ingredient Detection and Recipe Generation prototype.
- *
- * Implements the Data Flow described in Chapter 3 / Figure 6:
- *   1-2. capture a frame from the rear camera and draw it to a canvas (base64 JPEG)
- *   3.   POST /api/detect-ingredients
- *   6.   render the updated cumulative ingredient list
- *   7-8. GET /api/recipes on request
- *   9.   render ranked recipe results
- *
- * IMPORTANT: change BACKEND_URL below once the back-end is deployed to Render.
+ * Front-end logic: capture a photo, send it for ingredient detection,
+ * show the ingredient list, and fetch/show recipes.
  */
 const BACKEND_URL = "https://ingredient-app-backend.onrender.com";
 
-// ---- Screen navigation -----------------------------------------------------
+// screen navigation
 
 const screens = {
   scan: document.getElementById("scan-screen"),
@@ -26,26 +18,11 @@ function showScreen(name) {
   screens[name].classList.remove("d-none");
 }
 
-// ---- Browser/back-button history integration --------------------------------
-//
-// Without this, every screen change only ever toggled .d-none classes - it never
-// touched the browser's history stack. That meant the phone's hardware/gesture
-// back button had nothing "in-app" to go back to, so it fell through to whatever
-// page the browser had open before this one (see the bug report: pressing back
-// on the recipe screen left the app entirely instead of returning to the
-// ingredient list). Fixed by pushing a history entry for every forward
-// navigation (navigateTo) and re-rendering the right screen when the browser
-// fires "popstate" (back/forward button), rather than relying on remembering
-// history entries).
-//
-// The in-app "Back to ..." buttons now simply call history.back() instead of
-// jumping straight to a screen, so they and the phone's real back button walk
-// the exact same history stack and can never get out of sync with each other.
+// back button fix - push history state so popstate can restore the right screen
 
 function renderState(state) {
   if (!state) {
-    // No state (or the user has gone back past the very first entry we set below) -
-    // fall back to the scan screen rather than showing nothing.
+    // no state, just fall back to the scan screen
     showScreen("scan");
     return;
   }
@@ -62,15 +39,14 @@ function navigateTo(screenName, extraState) {
   showScreen(screenName);
 }
 
-// Tag the screen that was already showing on page load, so that navigating back
-// to it (rather than out of the app) still renders correctly.
+// tag the initial screen so going back to it still works
 history.replaceState({ screen: "scan" }, "");
 
 window.addEventListener("popstate", (event) => {
   renderState(event.state);
 });
 
-// ---- Camera setup (getUserMedia, rear-facing camera) -----------------------
+// camera setup (rear-facing)
 
 const video = document.getElementById("camera-feed");
 const canvas = document.getElementById("capture-canvas");
@@ -90,8 +66,7 @@ async function startCamera() {
     cameraPlaceholder.classList.add("d-none");
     captureBtn.disabled = false;
   } catch (err) {
-    // SR5: degrade gracefully with a clear message if permission is denied, rather than
-    // failing silently.
+    // show a clear message instead of failing silently if permission is denied
     cameraPlaceholder.classList.remove("d-none");
     cameraPlaceholder.querySelector("p").textContent =
       "Camera permission was denied or is unavailable. Enable it in your browser settings and try again.";
@@ -101,15 +76,10 @@ async function startCamera() {
 }
 
 enableCameraBtn.addEventListener("click", startCamera);
-// Attempt automatically on load too, since most browsers only need the one prompt.
+// try automatically on load too
 startCamera();
 
-// Phone cameras commonly capture at 3000px+ on the long side. Sending that whole
-// image to the back-end (and on to Gemini) is most of what makes detection feel
-// slow, since it has to be uploaded from the phone and then processed at full
-// resolution. Downscaling to a still-plenty-sharp 1024px cap shrinks the payload
-// dramatically and speeds up both the upload and the Gemini response, without a
-// noticeable drop in detection accuracy.
+// phone photos can be huge, downscale before sending so it uploads/detects faster
 const MAX_CAPTURE_DIMENSION = 1024;
 
 function captureFrame() {
@@ -123,7 +93,7 @@ function captureFrame() {
   return canvas.toDataURL("image/jpeg", 0.8); // full data URL, incl. "data:image/jpeg;base64," prefix
 }
 
-// ---- API helpers ------------------------------------------------------------
+// api helpers
 
 async function apiPost(path, body) {
   const res = await fetch(`${BACKEND_URL}${path}`, {
@@ -149,7 +119,7 @@ function showAlert(el, message, variant) {
   el.classList.remove("d-none");
 }
 
-// ---- Scan screen behaviour ---------------------------------------------------
+// scan screen
 
 const scanCountEl = document.getElementById("scan-count");
 const scanStatusEl = document.getElementById("scan-status");
@@ -160,8 +130,7 @@ captureBtn.addEventListener("click", async () => {
   captureBtn.textContent = "Detecting...";
   scanStatusEl.classList.add("d-none");
 
-  // Freeze on the photo just taken (like a real camera shutter) instead of
-  // continuing to show the live feed while detection is in progress.
+  // show the photo just taken instead of the live feed while detecting
   const dataUrl = captureFrame();
   capturedPreview.src = dataUrl;
   capturedPreview.classList.remove("d-none");
@@ -211,7 +180,7 @@ document.getElementById("view-list-btn").addEventListener("click", () => {
   loadIngredientList();
 });
 
-// ---- Ingredient list screen behaviour ----------------------------------------
+// ingredient list screen
 
 const ingredientListEl = document.getElementById("ingredient-list");
 const emptyListMessage = document.getElementById("empty-list-message");
@@ -269,7 +238,7 @@ function capitalise(text) {
   return text.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-// ---- Manually add an ingredient by text ----------------------------------------
+// manually add an ingredient by text
 
 const addIngredientToggleBtn = document.getElementById("add-ingredient-toggle-btn");
 const addIngredientForm = document.getElementById("add-ingredient-form");
@@ -344,7 +313,7 @@ document.getElementById("get-recipes-btn").addEventListener("click", async () =>
   }
 });
 
-// ---- Recipe results screen behaviour -----------------------------------------
+// recipe results screen
 
 const recipeCardsEl = document.getElementById("recipe-cards");
 
@@ -397,7 +366,7 @@ document.getElementById("back-to-list-btn").addEventListener("click", () => {
   history.back();
 });
 
-// ---- Recipe detail screen behaviour -------------------------------------------
+// recipe detail screen
 
 const detailTitleEl = document.getElementById("detail-title");
 const detailImageEl = document.getElementById("detail-image");

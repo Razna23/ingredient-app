@@ -2,12 +2,7 @@ package com.ingredientapp.model;
 
 import java.util.List;
 
-/**
- * Full detail for a single recipe (Chapter 3 extension: users asked to see actual ingredient
- * quantities and cooking steps, not just the summary card returned by GET /api/recipes).
- * Fetched on demand from Spoonacular's "Get Recipe Information" endpoint when a user taps a
- * recipe card, keeping the initial GET /api/recipes response small.
- */
+/* Full recipe info (ingredient amounts + steps), fetched when a recipe card is tapped. */
 public class RecipeDetail {
 
     private int id;

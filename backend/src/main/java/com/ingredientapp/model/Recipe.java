@@ -1,10 +1,7 @@
 package com.ingredientapp.model;
 
-/**
- * A recipe suggestion returned by the Spoonacular API. Recipe objects are never stored in
- * the session (see the "queried to retrieve" dependency in Figure 5) - they are built fresh
- * from the API response each time GET /api/recipes is called.
- */
+/* A recipe suggestion from Spoonacular. Not stored in the session, fetched
+   fresh each time GET /api/recipes is called. */
 public class Recipe {
 
     private int id;

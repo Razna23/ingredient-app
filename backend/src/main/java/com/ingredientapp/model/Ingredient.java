@@ -1,16 +1,13 @@
 package com.ingredientapp.model;
 
-/**
- * A single ingredient detected by the Clarifai Food Model API and held in the
- * user's session (see IngredientSession in the dissertation's Figure 5: Session Data Model).
- */
+/* One ingredient detected in a scan, held in the user's session. */
 public class Ingredient {
 
     private String name;
     private double confidence;
 
     public Ingredient() {
-        // required for JSON deserialization
+        // needed for JSON
     }
 
     public Ingredient(String name, double confidence) {

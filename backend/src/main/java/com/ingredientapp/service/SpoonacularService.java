@@ -13,14 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Wraps calls to Spoonacular's "find by ingredients" endpoint (Chapter 3: API Integration Design).
- *
- * Real-call mode is used automatically once spoonacular.api.key is set (or the
- * SPOONACULAR_API_KEY environment variable). Until then, the service returns mock recipes
- * derived from whatever ingredients are currently in the session, so the front-end's Recipe
- * Results screen can be built and demonstrated before a Spoonacular account exists.
- */
+/* Calls Spoonacular's "find by ingredients" API to get recipe suggestions.
+   Runs in mock mode until spoonacular.api.key (or SPOONACULAR_API_KEY on Render) is set. */
 @Service
 public class SpoonacularService {
 
@@ -36,11 +30,7 @@ public class SpoonacularService {
         return apiKey == null || apiKey.isBlank();
     }
 
-    /**
-     * Finds recipes ranked to maximise use of the supplied ingredients (ranking=2 favours
-     * recipes that use more of the supplied ingredients and require fewer extra ones -
-     * see Chapter 3's discussion of Spoonacular's ranking option).
-     */
+    /* Finds recipes that use as many of the given ingredients as possible. */
     public List<Recipe> findRecipes(List<Ingredient> ingredients) {
         if (isMockMode()) {
             return mockRecipes(ingredients);
@@ -79,12 +69,7 @@ public class SpoonacularService {
         return recipes;
     }
 
-    /**
-     * Fetches full recipe detail (ingredient quantities + step-by-step instructions) for a
-     * single recipe, called when a user taps a card on the Recipe Results screen. In mock
-     * mode, a generic detail is synthesised from whatever ingredients are currently in the
-     * session, since there is no real recipe ID to look up yet.
-     */
+    /* Gets full recipe info (ingredient amounts + steps) for one recipe. */
     @SuppressWarnings("unchecked")
     public RecipeDetail getRecipeDetail(int id, List<Ingredient> sessionIngredients) {
         if (isMockMode()) {
@@ -117,8 +102,7 @@ public class SpoonacularService {
                 instructionSteps.add((String) step.get("step"));
             }
         }
-        // Fall back to the raw instructions field (plain-ish HTML) if Spoonacular didn't
-        // return a step-by-step breakdown for this particular recipe.
+        // fallback if Spoonacular didn't give step-by-step instructions
         if (instructionSteps.isEmpty() && response.get("instructions") instanceof String raw && !raw.isBlank()) {
             instructionSteps.add(raw.replaceAll("<[^>]*>", ""));
         }

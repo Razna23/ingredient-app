@@ -20,24 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Wraps calls to Google's Gemini API (multimodal image understanding) for ingredient
- * detection. This replaces the originally planned Clarifai Food Model integration
- * (see Chapter 3 / Chapter 4: this substitution is documented as an implementation
- * challenge - Clarifai's API became unreachable from multiple independent networks during
- * development, and its sign-up flow hit an unrelated third-party billing (Stripe) error).
- *
- * Gemini has no dedicated "food model" the way Clarifai did, so this service instead sends
- * the captured frame to a general-purpose Gemini model with a prompt asking it to identify
- * cooking ingredients and return them as structured JSON, then parses that JSON into the same
- * Ingredient shape the rest of the system already expects. This keeps the Controller, session
- * model, and front-end completely unchanged - only this service's internals differ.
- *
- * Real-call mode is used automatically once gemini.api.key is set (or the GEMINI_API_KEY
- * environment variable, e.g. on Render). Until then, the service runs in mock mode so the rest
- * of the system can be built and tested without a Gemini account yet. See README.md for where
- * to get a free key (no credit card required, unlike Clarifai/Google Cloud Vision/Rekognition).
- */
+/* Sends a photo to Gemini and asks it to identify the ingredients in it.
+   Runs in mock mode until gemini.api.key (or GEMINI_API_KEY on Render) is set. */
 @Service
 public class GeminiService {
 
@@ -71,11 +55,7 @@ public class GeminiService {
         return apiKey == null || apiKey.isBlank();
     }
 
-    /**
-     * Detects ingredients in a base64-encoded JPEG frame. Returns only ingredients whose
-     * (self-reported) confidence exceeds the configured threshold, mirroring the
-     * confidence-threshold filtering originally designed around Clarifai's concept scores.
-     */
+    /* Detects ingredients in a base64 JPEG. Only keeps ones above the confidence threshold. */
     public List<Ingredient> detectIngredients(String base64Image) {
         if (isMockMode()) {
             return mockDetect();
@@ -114,17 +94,12 @@ public class GeminiService {
             try {
                 responseJson = restTemplate.postForObject(GEMINI_URL, requestEntity, String.class);
             } catch (HttpClientErrorException.TooManyRequests e) {
-                // On the free tier this is almost always the 20-requests/day quota being
-                // exhausted, not a transient rate limit. Surface this distinctly (instead of
-                // returning an empty list) so the controller/front-end can tell the user the
-                // real reason instead of "try a clearer angle".
+                // free tier daily quota hit, not a normal rate limit
                 logger.warn("Gemini API quota/rate limit hit (model={}): {}", model, e.getMessage());
                 throw new GeminiRateLimitedException(
                         "The Gemini API daily free-tier quota has been used up. Try again later.");
             } catch (RestClientException e) {
-                // Network failure, timeout, or another non-2xx HTTP response (bad/expired API
-                // key, wrong model name, etc). Logged so a "no ingredients detected" scan can
-                // be told apart from a genuinely failed API call in Render's logs.
+                // network error or bad API call, log it and return nothing
                 logger.error("Gemini API call failed (model={}): {}", model, e.getMessage(), e);
                 return results;
             }
@@ -159,25 +134,17 @@ public class GeminiService {
                 logger.warn("Gemini model_output was not a JSON array as requested. Model text: {}", modelText);
             }
         } catch (GeminiRateLimitedException e) {
-            // Let this propagate up to the controller unchanged - it must NOT be swallowed by
-            // the generic catch below, or the quota-exhausted case would silently collapse
-            // back into an empty "no ingredients detected" result.
+            // rethrow, don't let this get swallowed by the catch below
             throw e;
         } catch (Exception e) {
-            // Gemini occasionally deviates from the requested JSON-only format (malformed JSON,
-            // unexpected shape); fail closed (no ingredients detected for this scan) rather than
-            // crashing the request, but log the real cause so it's visible in Render's logs
-            // instead of being indistinguishable from a genuine "nothing recognized" result.
+            // Gemini didn't return valid JSON, just log it and return nothing
             logger.error("Failed to parse Gemini response (model={}): {}", model, e.getMessage(), e);
             results.clear();
         }
         return results;
     }
 
-    /**
-     * Navigates the Interactions API response (an "interaction" resource with a "steps"
-     * timeline) to find the model's final text output.
-     */
+    /* Digs the model's text output out of the API response. */
     private String extractModelText(String responseJson) throws Exception {
         JsonNode root = objectMapper.readTree(responseJson);
         JsonNode steps = root.path("steps");
@@ -208,11 +175,7 @@ public class GeminiService {
         return trimmed.trim();
     }
 
-    /**
-     * Simulates a single camera scan detecting one or two plausible ingredients, so the
-     * end-to-end flow (capture -> detect -> session -> recipes) can be exercised without a
-     * real Gemini key.
-     */
+    /* Fakes a scan result so the app works without a real Gemini key. */
     private List<Ingredient> mockDetect() {
         List<Ingredient> pool = List.of(
                 new Ingredient("onion", 0.93),
@@ -222,7 +185,7 @@ public class GeminiService {
                 new Ingredient("chicken breast", 0.78),
                 new Ingredient("bell pepper", 0.74),
                 new Ingredient("potato", 0.71),
-                new Ingredient("carrot", 0.69) // deliberately below the default 0.70 threshold
+                new Ingredient("carrot", 0.69) // below the default threshold on purpose
         );
         List<Ingredient> shuffled = new ArrayList<>(pool);
         java.util.Collections.shuffle(shuffled, ThreadLocalRandom.current());

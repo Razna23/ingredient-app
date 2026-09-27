@@ -1,10 +1,6 @@
 package com.ingredientapp.dto;
 
-/**
- * Request body for POST /api/detect-ingredients.
- * `image` is a base64-encoded JPEG frame captured by the front-end's HTML canvas
- * (data URL prefix already stripped by the client - see frontend/app.js).
- */
+/* Request body for POST /api/detect-ingredients - a base64 JPEG from the camera. */
 public class ImageRequest {
 
     private String image;

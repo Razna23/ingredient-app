@@ -16,16 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * REST controller implementing the two endpoints described in Chapter 3 (Back-End Design),
- * plus a few small additions used by the front-end: GET /api/ingredients (so a page refresh can
- * redraw the list), DELETE /api/ingredients/{name} (FR5: manual removal of an incorrectly
- * detected ingredient), and POST /api/ingredients (manually typing in an ingredient Gemini
- * missed, or one the user already has on hand, without needing a camera scan at all).
- *
- * Ingredients are held per-session using Spring's built-in HttpSession (in-memory, no database
- * - see Figure 5: Session Data Model and the Design Decisions table in Chapter 3).
- */
+/* Main REST endpoints: scan an ingredient, view/add/remove ingredients, and get recipes.
+   Ingredients are kept per-session in memory, no database. */
 @RestController
 @RequestMapping("/api")
 public class IngredientController {
@@ -46,9 +38,7 @@ public class IngredientController {
         try {
             detected = geminiService.detectIngredients(request.getImage());
         } catch (GeminiRateLimitedException e) {
-            // Distinct HTTP status (429) so the front-end can tell "Gemini's quota is used up
-            // for today" apart from a genuine "no ingredients recognized in this frame" result,
-            // instead of both collapsing into the same misleading message.
+            // 429 so the front-end knows it's a quota issue, not just no ingredients found
             return ResponseEntity.status(429).body(Map.of(
                     "error", "gemini_rate_limited",
                     "message", e.getMessage()
@@ -81,17 +71,14 @@ public class IngredientController {
                     "error", "Ingredient name cannot be empty."
             ));
         }
-        // A separate final variable (rather than reassigning rawName itself) because
-        // the lambda below captures it, and Java only allows a lambda to capture a
-        // local variable that is never reassigned after its first value.
+        // needs to be final so the lambda below can use it
         final String name = rawName.length() > 40 ? rawName.substring(0, 40) : rawName;
 
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
         boolean alreadyPresent = sessionIngredients.stream()
                 .anyMatch(existing -> existing.getName().equalsIgnoreCase(name));
         if (!alreadyPresent) {
-            // Confidence 1.0: the user typed this themselves, so there's no detection
-            // uncertainty to represent - it's simply above every confidence threshold.
+            // 1.0 confidence since the user typed it themselves
             sessionIngredients.add(new Ingredient(name, 1.0));
         }
 

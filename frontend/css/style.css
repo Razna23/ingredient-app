@@ -1,6 +1,4 @@
-/* Mobile-only layout: the app is deliberately capped at phone width (see Chapter 1:
-   Scope and Limitations - this is a functional prototype designed exclusively for
-   smartphone use). */
+/* Mobile-only layout, capped at phone width on purpose */
 
 *,
 *::before,
@@ -14,13 +12,8 @@ body {
   height: 100%;
 }
 
-/* Soft, abstract color mesh behind the app card - built from the same green/gold/blue
-   already used for the ingredient pills and buttons, so it reads as part of the same
-   design rather than an unrelated decoration. Pure CSS gradients, no image file needed.
-   The body is a flex container (rather than the card using margin:0 auto) so the card
-   can be given a visible gap on every screen size, including real phones - previously
-   the card filled 100% of the viewport edge-to-edge, so this background was never
-   actually visible on a phone, only in a desktop browser wider than 430px. */
+/* Background gradient using the same colors as the pills/buttons.
+   Flex container so the card has a gap around it instead of filling the whole screen. */
 body {
   background-color: #f2f3f5;
   background-image:
@@ -34,19 +27,12 @@ body {
   padding: 1rem;
 }
 
-/* Defensive rule: showing/hiding screens, the camera placeholder, and status messages all
-   rely on Bootstrap's .d-none utility class. Found during testing - if Bootstrap's CSS fails
-   to load (CDN outage, offline demo, restrictive network), .d-none would otherwise do nothing
-   and every screen/message would render stacked on top of each other at once. Defining our
-   own copy here removes that single point of failure. */
+/* Backup .d-none in case Bootstrap's CDN fails to load */
 .d-none {
   display: none !important;
 }
 
-/* Width capped at 430px as before; height is no longer set explicitly here - the body's
-   flex container stretches it to fill the space left after the 1rem padding on every
-   side (this also sidesteps needing a separate 100vh/100dvh mobile-toolbar fallback,
-   since it now derives from the body's own height instead of the raw viewport unit). */
+/* Capped at 430px wide, height comes from the body's flex container */
 .app-shell {
   width: 100%;
   max-width: 430px;
@@ -66,16 +52,8 @@ body {
   margin-bottom: 1rem;
 }
 
-/* Logo shown above "Scan Ingredient": the title text block (.app-logo-text) is the
-   thing that gets centered - based only on its own width - and the logo image is a
-   separate child, taken out of the flow with position:absolute and pinned to sit right
-   against the text block's left edge. This is deliberately different from a flex row
-   that centers logo+text together as one group (that pushes the text off-center,
-   since the pair's combined width includes the logo); here the text is genuinely
-   centered as if the logo weren't there, while the logo still tracks alongside it
-   wherever it ends up. Text uses Georgia (already built into every phone/desktop,
-   falling back to Times New Roman and then any serif) for a "culinary/cookbook" feel -
-   deliberately no @font-face or Google Fonts <link>, so nothing new to host or load. */
+/* Logo above "Scan Ingredient". Text block is centered on its own, logo image is
+   positioned absolutely next to it so it doesn't push the text off-center. */
 .app-logo {
   text-align: center;
   margin-bottom: 0.7rem;
@@ -118,10 +96,7 @@ body {
   text-transform: uppercase;
 }
 
-/* Every screen fills the remaining height of the app shell, so the action
-   button(s) at the bottom stay pinned to the bottom of the screen no matter
-   how much (or how little) scrollable content sits above them - e.g. the
-   "Scan Another" / "Get Recipes" pair on the ingredient list screen. */
+/* Each screen fills the remaining height so the buttons at the bottom stay pinned down */
 .screen {
   display: flex;
   flex-direction: column;
@@ -157,9 +132,7 @@ body {
   object-fit: cover;
 }
 
-/* Frozen shot shown in place of the live feed while a capture is being detected,
-   so the app behaves like a real camera (take photo -> show the photo you just
-   took) rather than continuing to show the live feed underneath it. */
+/* Frozen photo shown while detecting, instead of the live camera feed */
 .captured-preview {
   position: absolute;
   inset: 0;
@@ -179,10 +152,7 @@ body {
   font-weight: 600;
   padding: 0.4rem 1.1rem;
   border-radius: 50px;
-  /* Without this, a narrow viewfinder could wrap the text onto a second line, which -
-     with no fixed height on this element - visually overlapped the first line instead
-     of cleanly stacking. Keeping it on one line and letting the pill size to fit it
-     (rather than a fixed width that was too narrow for the text) fixes that. */
+  /* keep on one line so it doesn't wrap and overlap itself */
   white-space: nowrap;
   max-width: 90%;
 }
@@ -245,10 +215,7 @@ body {
   opacity: 1;
 }
 
-/* "+ Add Ingredient" toggle and the text-entry form it reveals (FR: manually add an
-   ingredient Gemini missed, without needing another camera scan). Sits below the
-   ingredient list, inside the scrollable area so it stays with the list rather than
-   competing with the pinned Scan Another / Get Recipes footer buttons. */
+/* "+ Add Ingredient" toggle and its form, sits below the ingredient list */
 .add-ingredient-toggle-btn {
   display: block;
   margin: 0.75rem auto 0;
@@ -271,9 +238,7 @@ body {
   flex: 1;
 }
 
-/* "Scan Another" / "Get Recipes" / "Back to Ingredients" at 1.5x the normal Bootstrap
-   button size (padding, font size, and border radius all scaled together), and sharing
-   the same blue primary color as "Scan Another" and "Capture". */
+/* "Scan Another" / "Get Recipes" / "Back to Ingredients" - bigger than normal Bootstrap buttons */
 #scan-another-btn,
 #get-recipes-btn,
 #back-to-list-btn {
@@ -282,14 +247,14 @@ body {
   border-radius: 0.6rem;
 }
 
-/* "View Ingredients" at 1.2x the normal Bootstrap button size. */
+/* "View Ingredients" - slightly bigger than normal */
 #view-list-btn {
   padding: 0.45rem 0.9rem;
   font-size: 1.2rem;
   border-radius: 0.5rem;
 }
 
-/* Warm gold buttons (View Ingredients / Get Recipes), matching the wireframe */
+/* gold buttons for View Ingredients / Get Recipes */
 .btn-recipes {
   background: #f2c879;
   border: 1px solid #e3b455;
@@ -306,8 +271,7 @@ body {
 
 /* --- Recipe results screen --- */
 
-/* Each recipe is styled like the gold "View Ingredients" / "Get Recipes"
-   buttons, so the whole list reads as a set of tappable button-like cards. */
+/* recipe cards styled like the gold buttons so they look tappable */
 .recipe-card {
   display: flex;
   align-items: center;

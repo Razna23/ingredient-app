@@ -63,7 +63,7 @@ body {
   font-weight: 700;
   text-align: center;
   margin-top: 0.75rem;
-  margin-top: 1rem;
+  margin-bottom: 1rem;
 }
 
 /* Logo shown above "Scan Ingredient": the title text block (.app-logo-text) is the
@@ -85,6 +85,7 @@ body {
   position: relative;
   display: inline-block;
   line-height: 1.2;
+  text-align: left;
 }
 
 .app-logo-image {
@@ -242,6 +243,32 @@ body {
 .remove-ingredient-btn:hover,
 .remove-ingredient-btn:focus {
   opacity: 1;
+}
+
+/* "+ Add Ingredient" toggle and the text-entry form it reveals (FR: manually add an
+   ingredient Gemini missed, without needing another camera scan). Sits below the
+   ingredient list, inside the scrollable area so it stays with the list rather than
+   competing with the pinned Scan Another / Get Recipes footer buttons. */
+.add-ingredient-toggle-btn {
+  display: block;
+  margin: 0.75rem auto 0;
+}
+
+.add-ingredient-form {
+  margin-top: 0.75rem;
+}
+
+.add-ingredient-form .form-control {
+  margin-bottom: 0.5rem;
+}
+
+.add-ingredient-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-ingredient-actions .btn {
+  flex: 1;
 }
 
 /* "Scan Another" / "Get Recipes" / "Back to Ingredients" at 1.5x the normal Bootstrap

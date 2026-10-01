@@ -74,6 +74,20 @@ public class IngredientController {
         // needs to be final so the lambda below can use it
         final String name = rawName.length() > 40 ? rawName.substring(0, 40) : rawName;
 
+        try {
+            if (!spoonacularService.isRecognisedIngredient(name)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "\"" + name + "\" isn't recognised as an ingredient. Check the spelling, "
+                                + "or try a simpler name, for example \"chicken\" instead of a brand name."
+                ));
+            }
+        } catch (ApiRateLimitedException e) {
+            return ResponseEntity.status(429).body(Map.of(
+                    "error", "rate_limited",
+                    "message", e.getMessage()
+            ));
+        }
+
         List<Ingredient> sessionIngredients = getSessionIngredients(session);
         boolean alreadyPresent = sessionIngredients.stream()
                 .anyMatch(existing -> existing.getName().equalsIgnoreCase(name));

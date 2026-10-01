@@ -27,6 +27,14 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Lets the session id travel as a request/response header instead of a cookie,
+             so it isn't subject to Safari's cross-site cookie blocking. Version is managed
+             by spring-boot-starter-parent above. -->
+        <dependency>
+            <groupId>org.springframework.session</groupId>
+            <artifactId>spring-session-core</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

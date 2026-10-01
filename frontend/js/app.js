@@ -322,6 +322,14 @@ addIngredientForm.addEventListener("submit", async (e) => {
   try {
     const res = await apiPost("/api/ingredients", { name });
     if (!res.ok) {
+      if (res.status === 429) {
+        showAlert(
+          addIngredientStatusEl,
+          "You've used up today's free ingredient lookup limit. Please try again later.",
+          "danger"
+        );
+        return;
+      }
       const err = await res.json();
       showAlert(addIngredientStatusEl, err.error || "Could not add that ingredient.", "danger");
       return;

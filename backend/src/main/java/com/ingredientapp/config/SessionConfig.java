@@ -4,10 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.session.MapSession;
 import org.springframework.session.MapSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.web.http.HeaderHttpSessionIdResolver;
 import org.springframework.session.web.http.HttpSessionIdResolver;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /* Switches session tracking from a cookie to a plain request/response header.
    The front-end and back-end are on two different Render subdomains, and Safari's
@@ -27,7 +31,8 @@ public class SessionConfig {
 
     @Bean
     public SessionRepository<MapSession> sessionRepository() {
-        return new MapSessionRepository();
+        Map<String, Session> sessions = new ConcurrentHashMap<>();
+        return new MapSessionRepository(sessions);
     }
 
     @Bean

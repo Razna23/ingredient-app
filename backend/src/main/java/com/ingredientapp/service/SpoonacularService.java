@@ -20,6 +20,7 @@ public class SpoonacularService {
 
     private static final String SPOONACULAR_URL = "https://api.spoonacular.com/recipes/findByIngredients";
     private static final String SPOONACULAR_INFO_URL = "https://api.spoonacular.com/recipes/{id}/information";
+    private static final String SPOONACULAR_AUTOCOMPLETE_URL = "https://api.spoonacular.com/food/ingredients/autocomplete";
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -29,6 +30,27 @@ public class SpoonacularService {
     /* Finds recipes that use as many of the given ingredients as possible. */
     public List<Recipe> findRecipes(List<Ingredient> ingredients) {
         return callSpoonacular(ingredients);
+    }
+
+    /* Checks whether Spoonacular's own ingredient database recognises this name, so a
+       manually typed entry can't just be any word. Spoonacular's autocomplete endpoint
+       does fuzzy/prefix matching, so a small typo of a real ingredient still passes; a
+       name that isn't food at all comes back with no matches. */
+    public boolean isRecognisedIngredient(String name) {
+        String url = UriComponentsBuilder.fromHttpUrl(SPOONACULAR_AUTOCOMPLETE_URL)
+                .queryParam("query", name)
+                .queryParam("number", 1)
+                .queryParam("apiKey", apiKey)
+                .toUriString();
+
+        Map[] response;
+        try {
+            response = restTemplate.getForObject(url, Map[].class);
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new ApiRateLimitedException(
+                    "The ingredient lookup API's daily free-tier quota has been used up. Try again later.");
+        }
+        return response != null && response.length > 0;
     }
 
     @SuppressWarnings("unchecked")

@@ -94,23 +94,69 @@ function captureFrame() {
 }
 
 // api helpers
+//
+// The session id travels as an X-Session-Id request/response header rather than a
+// cookie (see SessionConfig/WebConfig on the back-end), since Safari blocks the
+// cross-site cookie the old setup relied on. sessionStorage keeps it for this tab
+// only, matching how session data already behaved before this change.
+
+const SESSION_HEADER = "X-Session-Id";
+const SESSION_STORAGE_KEY = "sc_session_id";
+
+function getStoredSessionId() {
+  try {
+    return sessionStorage.getItem(SESSION_STORAGE_KEY);
+  } catch (err) {
+    return null; // sessionStorage can be unavailable, e.g. in private browsing
+  }
+}
+
+function storeSessionId(sessionId) {
+  try {
+    sessionStorage.setItem(SESSION_STORAGE_KEY, sessionId);
+  } catch (err) {
+    // nothing we can do if storage is blocked; this request still worked, it just
+    // won't be remembered for the next one
+  }
+}
+
+function withSessionHeader(headers) {
+  const sessionId = getStoredSessionId();
+  const merged = Object.assign({}, headers);
+  if (sessionId) {
+    merged[SESSION_HEADER] = sessionId;
+  }
+  return merged;
+}
+
+function captureSessionId(res) {
+  const sessionId = res.headers.get(SESSION_HEADER);
+  if (sessionId) {
+    storeSessionId(sessionId);
+  }
+  return res;
+}
 
 async function apiPost(path, body) {
   const res = await fetch(`${BACKEND_URL}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include", // required so the session cookie is sent cross-origin
+    headers: withSessionHeader({ "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
-  return res;
+  return captureSessionId(res);
 }
 
 async function apiGet(path) {
-  return fetch(`${BACKEND_URL}${path}`, { credentials: "include" });
+  const res = await fetch(`${BACKEND_URL}${path}`, { headers: withSessionHeader({}) });
+  return captureSessionId(res);
 }
 
 async function apiDelete(path) {
-  return fetch(`${BACKEND_URL}${path}`, { method: "DELETE", credentials: "include" });
+  const res = await fetch(`${BACKEND_URL}${path}`, {
+    method: "DELETE",
+    headers: withSessionHeader({}),
+  });
+  return captureSessionId(res);
 }
 
 function showAlert(el, message, variant) {

@@ -10,6 +10,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -88,6 +89,9 @@ public class SpoonacularService {
                     ((Number) item.get("missedIngredientCount")).intValue()
             ));
         }
+        // ranking=2 above already favours fewer missing ingredients, but this guarantees
+        // the order outright: zero-missing recipes first, then 1 more needed, then 2, and so on
+        recipes.sort(Comparator.comparingInt(Recipe::getMissedIngredientCount));
         return recipes;
     }
 
